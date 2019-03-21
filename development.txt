@@ -1,0 +1,3 @@
+bpython
+beautifulsoup4
+lxml

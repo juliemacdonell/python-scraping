@@ -14,6 +14,7 @@ def main():
         if not child or (isinstance(child, str) and not child.strip()):
             continue
 
+        # print(child)
         try:
             datetime = get_datetime(child)
             if datetime:
@@ -25,6 +26,10 @@ def main():
             composers = get_composers(child)
             if composers:
                 print(f'Composers: {", ".join(composers)}')
+
+            artists = get_artists(child)
+            if artists:
+                print(f'Artists: {", ".join(artists)}')
 
             print('-----------------------------------------------------')
         except Exception as exc:
@@ -59,11 +64,17 @@ def get_datetime(child):
     if time_ is None:
         hour = 0
     else:
-        hour = int(time_.split()[0])
+        hour_minute = time_.split()[0].split('_')
+        hour = int(hour_minute[0])
+        try:
+            minute = int(hour_minute[1])
+        except IndexError:
+            minute = 0
+
         if 'p.m.' in time_:
             hour += 12
 
-    return _dt.datetime(split[2], split[1], split[0], hour=hour)
+    return _dt.datetime(split[2], split[1], split[0], hour=hour, minute=minute)
 
 
 def get_composers(child):
@@ -75,6 +86,17 @@ def get_composers(child):
         return None
 
     return composers.split()
+
+
+def get_artists(child):
+    try:
+        artists = child.find('div', {'class': 'mp_popbesetzung'}).text
+    except AttributeError:
+        return None
+    except TypeError:
+        return None
+
+    return [artist.replace(',', '') for artist in artists.split()]
 
 
 if __name__ == '__main__':

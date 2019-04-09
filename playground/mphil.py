@@ -11,12 +11,26 @@ bs = BeautifulSoup(html, "html.parser")
 
 def main():
     for child in bs.find('div', {'id': 'listview'}).children:
-        datetime = get_datetime(child)
-        if datetime:
-            print(child)
-            print(datetime)
-            print('-----------------------------------------------------')
+        if not child or (isinstance(child, str) and not child.strip()):
+            continue
 
+        try:
+            datetime = get_datetime(child)
+            if datetime:
+                formatted = datetime.strftime(
+                    '%I:%M %p on %A, %B %D, %Y'
+                ).lstrip('0')
+                print(f'Date: {formatted}')
+
+            composers = get_composers(child)
+            if composers:
+                print(f'Composers: {", ".join(composers)}')
+
+            print('-----------------------------------------------------')
+        except Exception as exc:
+            print(f'\t{exc}')
+            print(f'\t{child}')
+            print('-----------------------------------------------------')
 
 
 # def get_title(child):
@@ -50,6 +64,17 @@ def get_datetime(child):
             hour += 12
 
     return _dt.datetime(split[2], split[1], split[0], hour=hour)
+
+
+def get_composers(child):
+    try:
+        composers = child.find('div', {'class': 'mp_popkomp'}).text
+    except AttributeError:
+        return None
+    except TypeError:
+        return None
+
+    return composers.split()
 
 
 if __name__ == '__main__':
